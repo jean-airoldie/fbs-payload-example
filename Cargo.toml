@@ -1,0 +1,8 @@
+[package]
+name = "fbs-payload-example"
+version = "0.1.0"
+authors = ["jean-airoldie <maxence.caron.1@ulaval.ca>"]
+edition = "2018"
+
+[dependencies]
+flatbuffers = "0"

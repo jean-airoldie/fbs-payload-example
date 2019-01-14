@@ -1,0 +1,9 @@
+namespace payload;
+
+table Payload {
+    messages: [Message];
+}
+
+table Message {
+    value: uint;
+}

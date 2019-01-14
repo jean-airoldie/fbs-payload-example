@@ -1,0 +1,6 @@
+/target
+**/*.rs.bk
+tags
+rusty-tags.vi
+.gdb_history
+perf.data*
