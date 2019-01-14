@@ -1,5 +1,5 @@
-use flatbuffers::{FlatBufferBuilder, WIPOffset};
 use fbs_payload_example::{Message, MessageBuilder, PayloadBuilder};
+use flatbuffers::{FlatBufferBuilder, WIPOffset};
 
 /// A server that write flatbuffers messages to a `Sink`
 /// (absent here) and reuses an internal `FlatBufferBuilder`.
@@ -23,10 +23,7 @@ struct PayloadStruct {
 impl PayloadStruct {
     /// This compiles but I have to do the MessageStruct to Message conversion
     /// myself.
-    pub fn to_bytes<'a>(
-        &self,
-        builder: &'a mut FlatBufferBuilder,
-    ) -> &'a [u8] {
+    pub fn to_bytes<'a>(&self, builder: &'a mut FlatBufferBuilder) -> &'a [u8] {
         let mut vec = Vec::new();
         for message in &self.message_structs {
             // Here I have to know how to convert MessageStruct to Message.
@@ -47,7 +44,7 @@ impl PayloadStruct {
     /// I can't get this to compile.
     pub fn to_bytes_delegated<'a, 'b>(
         &'b self,
-        builder: &'a mut FlatBufferBuilder<'b>
+        builder: &'a mut FlatBufferBuilder<'b>,
     ) -> &'a [u8] {
         let mut vec = Vec::new();
         for message in &self.message_structs {
@@ -71,9 +68,9 @@ struct MessageStruct {
 }
 
 impl MessageStruct {
-    pub fn to_fbs<'bldr, 'b>(
+    pub fn to_fbs<'a, 'b>(
         &'b self,
-        builder: &'bldr mut FlatBufferBuilder<'b>,
+        builder: &'a mut FlatBufferBuilder<'b>,
     ) -> WIPOffset<Message> {
         let mut message_builder = MessageBuilder::new(builder);
         message_builder.add_value(self.value);
@@ -81,5 +78,4 @@ impl MessageStruct {
     }
 }
 
-fn main() {
-}
+fn main() {}
