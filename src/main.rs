@@ -23,10 +23,10 @@ struct PayloadStruct {
 impl PayloadStruct {
     /// This compiles but I have to do the MessageStruct to Message conversion
     /// myself.
-    pub fn to_bytes<'bldr>(
+    pub fn to_bytes<'a>(
         &self,
-        builder: &'bldr mut FlatBufferBuilder,
-    ) -> &'bldr [u8] {
+        builder: &'a mut FlatBufferBuilder,
+    ) -> &'a [u8] {
         let mut vec = Vec::new();
         for message in &self.message_structs {
             // Here I have to know how to convert MessageStruct to Message.
@@ -45,10 +45,10 @@ impl PayloadStruct {
     }
 
     /// I can't get this to compile.
-    pub fn to_bytes_delegated<'bldr>(
-        &self,
-        builder: &'bldr mut FlatBufferBuilder,
-    ) -> &'bldr [u8] {
+    pub fn to_bytes_delegated<'a, 'b>(
+        &'b self,
+        builder: &'a mut FlatBufferBuilder<'b>
+    ) -> &'a [u8] {
         let mut vec = Vec::new();
         for message in &self.message_structs {
             // Here I can let MessageStruct do the conversion.
@@ -71,9 +71,9 @@ struct MessageStruct {
 }
 
 impl MessageStruct {
-    pub fn to_fbs<'bldr>(
-        &self,
-        builder: &'bldr mut FlatBufferBuilder,
+    pub fn to_fbs<'bldr, 'b>(
+        &'b self,
+        builder: &'bldr mut FlatBufferBuilder<'b>,
     ) -> WIPOffset<Message> {
         let mut message_builder = MessageBuilder::new(builder);
         message_builder.add_value(self.value);
