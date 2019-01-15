@@ -1,5 +1,5 @@
 [[package]]
-name = "fbs-payload-example"
+name = "fbs-payload"
 version = "0.1.0"
 dependencies = [
  "flatbuffers 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)",
