@@ -19,7 +19,8 @@ impl<'bldr> Server<'bldr> {
     // requires the lifetime of the `&Payload` to be the same as the one
     // of the `FlatBufferBuilder`.
     fn send_payload_delegated(&mut self, payload: &Payload) {
-        // This doesn't compile.
+        // This doesn't compile because we need to bind the `&Payload` to
+        // the builder, but it doesn't make sense.
         let bytes_ref = payload.to_bytes_delegated(&mut self.builder);
         // Here we would write the bytes to a `Sink`.
         self.builder.reset();
