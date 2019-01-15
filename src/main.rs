@@ -41,9 +41,9 @@ impl Payload {
     pub fn to_bytes<'a>(&self, builder: &'a mut FlatBufferBuilder) -> Vec<u8> {
         let mut vec = Vec::new();
         for message in &self.messages {
-            // Here we can't call any functions that do the conversion for us
-            // because it would let a `WIPOffset<_>` whose lifetime must be bound
-            // to the builder escape.
+            // Here we can't call any functions that can do the conversion for us
+            // because it would let a `WIPOffset<_>` (whose lifetime must be bound
+            // to the builder) escape.
             let mut message_builder = fbs_payload::MessageBuilder::new(builder);
             message_builder.add_value(message.value);
             vec.push(message_builder.finish());
@@ -55,6 +55,7 @@ impl Payload {
         let payload_offset = payload_builder.finish();
 
         builder.finish(payload_offset, None);
+        // Here we must needlessly clone the data.
         let vec = builder.finished_data().to_vec();
         builder.reset();
         vec
