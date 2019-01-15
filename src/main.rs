@@ -65,7 +65,8 @@ impl Payload {
     // cannot compile because:
     // * The byte slice we return has the same lifetime as the `FlatBufferBuilder`,
     //   yet we will eventually call `FlatBufferBuilder::reset()` and it will expire.
-    // * 
+    // * The `Message::to_fbs(...)` returns a `WIPOffset<_>` bound to the builder's
+    //   lifetime.
     pub fn to_bytes_delegated<'a>(
         &'a self,
         builder: &'a mut FlatBufferBuilder<'a>,
@@ -94,8 +95,6 @@ struct Message {
 }
 
 impl Message {
-    // The compiles because we don't have to bind `WIPOffset<_>`'s offset to
-    // the builder since it implements `Copy`.
     pub fn to_fbs<'a>(
         &'a self,
         builder: &'a mut FlatBufferBuilder<'a>,
