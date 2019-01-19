@@ -1,3 +1,5 @@
+use std::io;
+
 use flatbuffers::{FlatBufferBuilder, WIPOffset};
 
 /// A server that write flatbuffers messages to a `Sink`
@@ -18,11 +20,12 @@ impl<'bldr> Server<'bldr> {
     // need to clone any bytes. But this doesn't compile because it
     // requires the lifetime of the `&Payload` to be the same as the one
     // of the `FlatBufferBuilder`.
-    fn send_payload_delegated(&mut self, payload: &Payload) {
+    fn send_payload_delegated(&mut self, payload: &Payload, mut sink: impl io::Write) {
         // This doesn't compile because we need to bind the lifetime of the `&Payload` to
         // the builder.
-        let bytes_ref = payload.to_bytes_delegated(&mut self.builder);
+        payload.to_bytes_delegated(&mut self.builder);
         // Here we would write the bytes to a `Sink`.
+        sink.write_all(self.builder.finished_data()).unwrap();
         self.builder.reset();
     }
 
@@ -69,10 +72,10 @@ impl Payload {
     //   yet we will eventually call `FlatBufferBuilder::reset()` and it will expire.
     // * The `Message::to_fbs(...)` returns a `WIPOffset<_>` bound to the builder's
     //   lifetime.
-    pub fn to_bytes_delegated<'a>(
-        &'a self,
-        builder: &'a mut FlatBufferBuilder<'a>,
-    ) -> &'a [u8] {
+    pub fn to_bytes_delegated(
+        &self,
+        builder: &mut FlatBufferBuilder,
+    ) {
         let mut vec = Vec::new();
         for message in &self.messages {
             // This compile because a `WIPOffset<_>` is copyable, yet
@@ -86,7 +89,6 @@ impl Payload {
         let payload_offset = payload_builder.finish();
 
         builder.finish(payload_offset, None);
-        builder.finished_data()
     }
 }
 
@@ -97,10 +99,10 @@ struct Message {
 }
 
 impl Message {
-    pub fn to_fbs<'a>(
-        &'a self,
-        builder: &'a mut FlatBufferBuilder<'a>,
-    ) -> WIPOffset<fbs_payload::Message> {
+    pub fn to_fbs<'bldr>(
+        &self,
+        builder: &mut FlatBufferBuilder<'bldr>,
+    ) -> WIPOffset<fbs_payload::Message<'bldr>> {
         let mut message_builder = fbs_payload::MessageBuilder::new(builder);
         message_builder.add_value(self.value);
         message_builder.finish()
@@ -111,9 +113,12 @@ fn main() {
     let message = Message { value: 0 };
     let payload = Payload { messages: vec![message] };
 
+
     let mut server = Server { builder: FlatBufferBuilder::new() };
     // This works.
     server.send_payload(&payload);
     // This does not.
-    server.send_payload_delegated(&payload);
+    let mut sink: Vec<u8> = Vec::new();
+    server.send_payload_delegated(&payload, &mut sink);
+    println!("{:?}", &sink[..]);
 }
